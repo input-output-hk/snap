@@ -59,6 +59,20 @@ jobs:
       - name: Configure
         run: |
           cabal configure --enable-tests --enable-benchmarks --enable-documentation --test-show-details=direct --write-ghc-environment-files=always
+          cabal build all --only-dependencies --dry-run
+
+      - name: Cabal cache over S3
+        uses: action-works/cabal-cache-s3@v1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        with:
+          region: us-west-2
+          dist-dir: dist-newstyle
+          store-path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          threads: 16
+          archive-uri: ${{ secrets.BINARY_CACHE_URI }}
+          skip: "${{ secrets.BINARY_CACHE_URI == '' }}"
 
       - name: Freeze
         run: |
@@ -88,6 +102,12 @@ jobs:
       - name: Documentation
         run: |
           cabal haddock
+
+      # - name: Setup tmate session
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
+      #   with:
+      #     limit-access-to-actor: true
 
   stack:
     name: stack / ghc ${{ matrix.ghc }}
