@@ -24,3 +24,4 @@ test/non-cabal-appdir/snaplets/foosnaplet
 test/test-cabal-dev
 test/test-snap-exe
 .ghc.environment*
+/cabal.project.local
